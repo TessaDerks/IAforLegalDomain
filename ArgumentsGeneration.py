@@ -9,19 +9,11 @@ from sentence_transformers import SentenceTransformer
 import os
 
 
-
-# Function to generate embeddings for a text
-def get_embedding(text):
-    inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=512)
-    with torch.no_grad():
-        outputs = model(**inputs)
-        # Use the [CLS] token representation as the embedding
-        embedding = outputs.last_hidden_state[:, 0, :].squeeze().numpy()
-    return embedding
-
 # Function to get embeddings for a single sentence or batch of sentences
 def get_embeddings(texts):
-
+    model_name = "nlpaueb/legal-bert-base-uncased"  # Fine-tuned for legal texts
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModel.from_pretrained(model_name)
     # Tokenize input texts
     inputs = tokenizer(texts, return_tensors="pt", padding=True,truncation=True,max_length=512 )
 
@@ -29,14 +21,8 @@ def get_embeddings(texts):
     with torch.no_grad():
         outputs = model(**inputs)
 
-    # Use the [CLS] token representation as the sentence embedding
-    # For models like BERT, this is outputs.last_hidden_state[:, 0, :]
-    # For sentence-transformer models, use outputs.pooler_output
     embeddings = outputs.last_hidden_state[:, 0, :]  # [CLS] token embeddings
-    #embeddings = outputs.last_hidden_state[0, 0, :]  # CLS token embedding (first token)
 
-    # Return a dictionary with embeddings
-    #return {"embeddings": embeddings.numpy()} 
     return embeddings
 
 # Function to save embeddings to a file
@@ -47,9 +33,10 @@ def save_embeddings(embeddings, filename):
 def load_embeddings(filename):
     return torch.tensor(np.load(filename))  # Load embeddings as a tensor
 
+
 # find n most similar cases within dataset of cases
 
-def findSimilarCases(k):
+def findSimilarCases(k, input):
     train_embeddings_file = os.path.join(embeddingsdir, 'train_embeddings.npy')
     if os.path.exists(train_embeddings_file):
         print("Loading train embeddings...")
@@ -61,8 +48,8 @@ def findSimilarCases(k):
         save_embeddings(train_embeddings, train_embeddings_file)
 
     # Calculate test embeddings
-    test_texts = [case['facts'] for case in dataset['test']]
-    test_embeddings = get_embeddings(test_texts)
+    #test_texts = [case['facts'] for case in dataset['test']]
+    test_embeddings = get_embeddings(input)
 
     # Initialize cosine similarity function
     cosi = torch.nn.CosineSimilarity(dim=1)
@@ -74,13 +61,15 @@ def findSimilarCases(k):
     top_values, top_indices = torch.topk(similarity_scores, k)
 
     # Print the top 5 most similar cases to the test case
-    print("Top", str(k)," most similar cases to the test case:")
+    print("Top", k," most similar cases to the test case:")
     for i in range(min(k, len(similarity_scores))):  # Handle cases where there are fewer than 5 training examples
         index = top_indices[i].item()  # Convert tensor to scalar index
         similarity = top_values[i].item()  # Get the cosine similarity value
         print(f"Case {index}: Similarity = {similarity:.4f}")
-        print(f"Data: {dataset['train'][index]['violation']}")  # Adjust to how the original dataset stores the cases
+        #print(f"Data: {dataset['train'][index]['violation']}")  # Adjust to how the original dataset stores the cases
         print("-" * 50)
+    
+    return top_indices.tolist()
 
 # create dataset with the facts but only article 10 cases
 def createDataSet():
@@ -97,16 +86,14 @@ def createDataSet():
 
 
 #createDataSet()
-model_name = "nlpaueb/legal-bert-base-uncased"  # Fine-tuned for legal texts
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModel.from_pretrained(model_name)
+
 #model = SentenceTransformer(model_name)
 #model = SentenceTransformer("all-MiniLM-L6-v2")
 
 #read in data 
 data = pd.read_csv('Data/article10_cases.csv')
-test_data = data.iloc[0:20,:]
-train_data = data.iloc[20:80,:]
+test_data = data.iloc[0:80,:]
+train_data = data.iloc[80:100,:]
 #print(train_data)
 new_case = test_data.sample()
 train_data.to_csv('train.csv', index=False)
@@ -116,5 +103,6 @@ embeddingsdir = "Data/"
      
 dataset = load_dataset('csv', data_files={'train': 'train.csv',   'test': 'test.csv'})
 print('new case :\n', new_case)
-findSimilarCases(3)
+similar_cases = findSimilarCases(6,new_case['facts'].iloc[0] )
+print(type(similar_cases))
 

@@ -1,7 +1,7 @@
 from sympy import symbols, And, Or, Not, Implies
 from transformers import pipeline
 from collections import defaultdict
-#import ArgumentsGeneration
+import ArgumentsGeneration
 
 
 # Step 1: Define the symbolic reasoning system for Article 10 (Freedom of Speech)
@@ -76,32 +76,26 @@ def explain_article(article_number):
 # Main loop
 if __name__ == "__main__":
     print("Welcome to the ECHR Freedom of Speech (Article 10) Legal Reasoning System!")
+    
     while True:
         user_input = input("Enter the case you want to discuss 'explain Article 10' (or 'exit' to quit): ")
         if user_input.lower() == "exit":
             break
 
-        # Handle requests for article explanations
-        if user_input.lower().startswith("explain article"):
-            article_number = user_input.split("explain article")[-1].strip()
-            explanation = explain_article(article_number)
-            print(f"Explanation for {article_number}: {explanation}")
-            continue
-
         # Step 1: Use LLM to interpret the input
-        logical_query = interpret_input(user_input)
-        print(f"Logical Query: {logical_query}")
+        #logical_query = interpret_input(user_input)
+        #print(f"Logical Query: {logical_query}")
 
         # Step 2: Construct an argument
-        support = ["ECHR Article 10"]  # Example: could include evidence or precedence
-        premises = [logical_query]  # Simplified for demonstration
-        argument = construct_argument(logical_query, premises, support)
-        print(f"Constructed Argument: {argument.conclusion} with premises {argument.premises}")
+        #support = ["ECHR Article 10"]  # Example: could include evidence or precedence
+        #premises = [logical_query]  # Simplified for demonstration
+        #argument = construct_argument(logical_query, premises, support)
+        #print(f"Constructed Argument: {argument.conclusion} with premises {argument.premises}")
 
         # Step 3: Evaluate argument acceptability
-        acceptability = check_argument_acceptability(argument)
-        status = "acceptable" if acceptability else "defeated"
-        print(f"Argument Status: {status}")
+        #acceptability = check_argument_acceptability(argument)
+        #status = "acceptable" if acceptability else "defeated"
+        #print(f"Argument Status: {status}")
 
         # Optional: Add counterarguments
         counter_input = input("Would you like to add a counterargument? (yes/no): ").strip().lower()
