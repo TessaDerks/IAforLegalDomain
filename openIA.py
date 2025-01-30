@@ -1,56 +1,46 @@
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoTokenizer, pipeline
 import torch
+import warnings
 
-# Load the tokenizer and chat-tuned model
-model_name = "tiiuae/falcon-7b-instruct"  # Adjust model size (7b, 13b, 70b) based on hardware
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(
-    model_name, 
-    device_map="auto",  # Automatically uses GPU if available
-    load_in_8bit=True   # Optional for low-resource systems, True
+
+warnings.filterwarnings("ignore")
+
+#model = "meta-llama/Llama-2-7b-chat-hf" # meta-llama/Llama-2-7b-hf
+model = "tiiuae/falcon-7b-instruct"
+
+tokenizer = AutoTokenizer.from_pretrained(model)
+
+llama_pipeline = pipeline(
+    "text-generation",  # LLM task
+    model=model,
+    torch_dtype=torch.float32,
+    device_map="auto",
 )
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-def generate_response(prompt, history=[]):
-    # Combine history with the current prompt
-    conversation = "".join([f"User: {u}\nAssistant: {a}\n" for u, a in history])
-    conversation += f"User: {prompt}\nAssistant:"
+def get_llama_response(prompt: str) -> None:
+    """
+    Generate a response from the Llama model.
 
-    # Tokenize the input
-    inputs = tokenizer(conversation, return_tensors="pt").to(device)
-    # Generate a response
-    outputs = model.generate(
-        **inputs,
-        max_new_tokens=200,
-        temperature=0.2,  # Adjust for randomness
-        top_p=0.5        # Adjust for diversity
+    Parameters:
+        prompt (str): The user's input/question for the model.
+
+    Returns:
+        None: Prints the model's response.
+    """
+    sequences = llama_pipeline(
+        prompt,
+        do_sample=True,
+        top_k=5,
+        num_return_sequences=1,
+        eos_token_id=tokenizer.eos_token_id,
+        max_length=512,
+        truncation = True,
     )
-    response = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    
-    # Extract the Assistant's reply (after "Assistant:")
-    reply = response.split("Assistant:")[-1].strip()
-    return reply
+    print("Chatbot:", sequences[0]['generated_text'])
 
-if __name__ == "__main__":
-    print("LLaMA 2 Chat Assistant (Interactive Mode)")
-    print("Type 'exit' to end the conversation.\n")
-
-    # Conversation history
-    history = []
-
-    while True:
-        # Get user input
-        user_input = input("User: ")
-        if user_input.lower() == "exit":
-            print("Goodbye!")
-            break
-
-        # Generate model's response
-        response = generate_response(user_input, history)
-
-        # Display the response
-        print(f"Assistant: {response}")
-
-        # Update conversation history
-        history.append((user_input, response))
-
+while True:
+    user_input = input("You: ")
+    if user_input.lower() in ["bye", "quit", "exit"]:
+        print("Chatbot: Goodbye!")
+        break
+    get_llama_response(user_input)

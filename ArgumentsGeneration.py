@@ -90,6 +90,7 @@ def createDataSet():
 #model = SentenceTransformer(model_name)
 #model = SentenceTransformer("all-MiniLM-L6-v2")
 
+'''
 #read in data 
 data = pd.read_csv('Data/article10_cases.csv')
 test_data = data.iloc[0:80,:]
@@ -106,3 +107,4 @@ print('new case :\n', new_case)
 similar_cases = findSimilarCases(6,new_case['facts'].iloc[0] )
 print(type(similar_cases))
 
+'''
