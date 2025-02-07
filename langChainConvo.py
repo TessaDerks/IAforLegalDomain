@@ -8,7 +8,8 @@ from langchain.agents.agent_types import AgentType
 from langchain_experimental.agents.agent_toolkits import create_pandas_dataframe_agent
 import ArgumentsGeneration
 
-database = pd.read_csv('Data/article10_cases_.csv')
+#database = pd.read_csv('Data/article10_cases_.csv')
+database = pd.read_excel('Data/cases_.xlsx')
 case_ind = 104
 case = database['facts'].iloc[case_ind]
 case_summary = database['summary'].iloc[case_ind]

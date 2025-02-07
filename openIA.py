@@ -23,7 +23,8 @@ my_api_key = mysecrets.deepinfra_key4['key']
 model_name = "meta-llama/Llama-3.2-11B-Vision-Instruct"
 
 # load dataset 
-database = pd.read_csv('Data/article10_cases_.csv')
+#database = pd.read_csv('Data/article10_cases_.csv')
+database = pd.read_excel('Data/cases_.xlsx')
 case_ind = 699
 case = database[['facts', 'law','violation']] 
 case_summary = database['summary'].iloc[case_ind]
