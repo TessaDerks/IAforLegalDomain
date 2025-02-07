@@ -1,14 +1,12 @@
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
-from transformers import AutoTokenizer, AutoModel, BertForSequenceClassification, BertTokenizer
+from transformers import AutoTokenizer, AutoModel
 import torch
 from datasets import load_dataset
 import pandas as pd
 from sklearn.model_selection import train_test_split 
 import os
-from problog.program import PrologString
-from problog import get_evaluatable
-#torchvision.disable_beta_transforms_warning().warnings.warn(_BETA_TRANSFORMS_WARNING)
+
 
 # Function to get embeddings for a single sentence or batch of sentences
 def get_embeddings(texts):
@@ -40,7 +38,7 @@ def load_embeddings(filename):
 def findSimilarCases(k, input):
     embeddingsdir = "Data/"
     #train_embeddings_file = os.path.join(embeddingsdir, 'train_embeddings.npy')
-    train_embeddings_file_path = "Data/train_embeddings_.npy"
+    train_embeddings_file_path = "Data/train_embeddings_600.npy"
     if os.path.exists(train_embeddings_file_path):
         print("Loading train embeddings...")
         train_embeddings = load_embeddings(train_embeddings_file_path)
@@ -101,8 +99,8 @@ def createDataSet():
 '''
 
 data = pd.read_csv('Data/article10_cases_.csv')
-train_data = data.iloc[0:80,:]
-test_data = data.iloc[81:82,:]
+train_data = data.iloc[0:600,:]
+test_data = data.iloc[300:301,:]
 #print(train_data)
 new_case = test_data.sample()
 train_data.to_csv('train.csv', index=False)
@@ -117,3 +115,5 @@ similar_cases = findSimilarCases(6,new_case['facts'].iloc[0] )
 #print(type(similar_cases))
 
 '''
+
+
