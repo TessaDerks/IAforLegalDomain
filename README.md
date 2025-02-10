@@ -4,3 +4,5 @@
  Run class openIA.py with openai key stored in a mysecrets.py file.
  Install langchain, langchain-community, langchain-openai, longchain-experiment
  Choose model at top of class and change folder name down at the class file if wanted.
+
+ In Results folder the interactions of 3 different models for 20 cases can be found
